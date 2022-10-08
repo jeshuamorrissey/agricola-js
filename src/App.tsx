@@ -47,6 +47,10 @@ export function App() {
                     state.executeActionTile(action);
                 }}
                 onHarvestTriggered={() => state.harvest()}
+                buildRequest={state.player.buildAction}
+                buildResponse={(row: number, column: number) => {
+                    state.setBuildResponse(row, column);
+                }}
             />
         </div>
     );

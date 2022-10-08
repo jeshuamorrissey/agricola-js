@@ -1,4 +1,4 @@
-import { TakeResourceAction } from '../systems/action';
+import { TakeResourceAction } from '../systems/actions/take-resource';
 import { Farm } from '../systems/farm';
 import { ResourceMap } from '../systems/resource';
 import { Round } from '../systems/round';

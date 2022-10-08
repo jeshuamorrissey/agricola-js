@@ -1,4 +1,4 @@
-import { Action } from '../systems/action';
+import { Action } from '../systems/actions/action';
 
 export type ActionsByStage = Record<number, Action[]>;
 export type ActionOnClickFn = (action: Action) => void;

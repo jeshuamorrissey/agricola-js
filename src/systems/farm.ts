@@ -1,5 +1,10 @@
 export type FarmInitFn = (farm: Farm) => void;
-export type FarmTile = 'empty' | 'wood-house' | 'clay-house' | 'stone-house';
+export type FarmTile =
+    | 'empty'
+    | 'wood-house'
+    | 'clay-house'
+    | 'stone-house'
+    | 'field';
 
 export class Farm {
     // Stored in row major order.

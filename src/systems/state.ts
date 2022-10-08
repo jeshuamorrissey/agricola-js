@@ -1,16 +1,11 @@
 import createState from 'zustand';
 import { DEFAULTS } from '../game/defaults';
-import { Action, TakeResourceAction } from './action';
+import { Action } from './actions/action';
+import { BuildOnFarmAction } from './actions/build-on-farm';
+import { TakeResourceAction } from './actions/take-resource';
 import { Farm } from './farm';
-import { ResourceMap } from './resource';
 import { Round } from './round';
-
-interface PlayerState {
-    farm: Farm;
-    numFamilyMembers: number;
-    remainingActions: number;
-    resources: ResourceMap;
-}
+import { PlayerState } from './state-player';
 
 interface State {
     // Information for the various players. For now, only make it one player.
@@ -31,6 +26,7 @@ interface State {
     executeActionTile: (action: Action) => void;
     advanceRound: () => void;
     harvest: () => void;
+    setBuildResponse: (row: number, column: number) => void;
 }
 
 export const useStore = createState<State>((set) => ({
@@ -46,11 +42,12 @@ export const useStore = createState<State>((set) => ({
     },
 
     defaultActions: [
-        new TakeResourceAction('Travelling Players', 'food', 2),
         new TakeResourceAction('3 Wood', 'wood', 3, true),
         new TakeResourceAction('1 Clay', 'clay', 1, true),
         new TakeResourceAction('1 Reed', 'reed', 1, true),
         new TakeResourceAction('Fishing Pond', 'food', 1, true),
+        new TakeResourceAction('Take 1 Grain', 'grain', 1),
+        new BuildOnFarmAction('Plow 1 Field', 'field', 'empty'),
     ],
     rounds: DEFAULTS.rounds,
 
@@ -92,19 +89,18 @@ export const useStore = createState<State>((set) => ({
         }
 
         set((state) => {
-            const resourceUpdate = action.performAction(
-                state.player.farm,
-                state.player.resources
-            );
+            let remainingActions = state.player.remainingActions;
+            if (action.prepare(state.player)) {
+                if (action.performAction(state.player)) {
+                    remainingActions -= 1;
+                    action.postAction(state.player);
+                }
+            }
 
             return {
                 player: {
                     ...state.player,
-                    remainingActions: state.player.remainingActions - 1,
-                    resources: {
-                        ...state.player.resources,
-                        ...resourceUpdate,
-                    },
+                    remainingActions: remainingActions,
                 },
             };
         });
@@ -156,6 +152,37 @@ export const useStore = createState<State>((set) => ({
                 },
                 currentRound: nextRound,
             };
+        });
+    },
+
+    setBuildResponse: (row: number, column: number) => {
+        set((state) => {
+            if (!state.player.buildAction) {
+                return {};
+            }
+
+            return {
+                player: {
+                    ...state.player,
+                    buildAction: {
+                        ...state.player.buildAction,
+                        response: {
+                            row,
+                            column,
+                        },
+                    },
+                },
+            };
+        });
+
+        set((state) => {
+            if (state.player.buildAction) {
+                state.executeActionTile(
+                    state.player.buildAction?.request.action
+                );
+            }
+
+            return {};
         });
     },
 }));

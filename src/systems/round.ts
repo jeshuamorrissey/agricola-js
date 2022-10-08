@@ -1,4 +1,4 @@
-import { Action } from './action';
+import { Action } from './actions/action';
 
 export interface Round {
     stage: number;
