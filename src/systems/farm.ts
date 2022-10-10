@@ -4,7 +4,13 @@ export type FarmTile =
     | 'wood-house'
     | 'clay-house'
     | 'stone-house'
+    | 'stable'
     | 'field';
+
+export interface FarmCoordinate {
+    row: number;
+    column: number;
+}
 
 export class Farm {
     // Stored in row major order.

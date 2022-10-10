@@ -1,11 +1,11 @@
 import createState from 'zustand';
 import { DEFAULTS } from '../game/defaults';
 import { Action } from './actions/action';
-import { BuildOnFarmAction } from './actions/build-on-farm';
+import { ANY_NUMBER, BuildOnFarmAction } from './actions/build-on-farm';
 import { TakeResourceAction } from './actions/take-resource';
 import { Farm } from './farm';
 import { Round } from './round';
-import { PlayerState } from './state-player';
+import { InputRequest, PlayerState } from './state-player';
 
 interface State {
     // Information for the various players. For now, only make it one player.
@@ -26,10 +26,23 @@ interface State {
     executeActionTile: (action: Action) => void;
     advanceRound: () => void;
     harvest: () => void;
-    setBuildResponse: (row: number, column: number) => void;
+    // setBuildResponse: (row: number, column: number) => void;
+    makeInputRequest: (request: InputRequest) => void;
+    cancelInputRequest: () => void;
+    updatePlayer: (updater: (player: PlayerState) => void) => void;
 }
 
-export const useStore = createState<State>((set) => ({
+export const useStore = createState<State>((set, get) => ({
+    updatePlayer: (updater: (player: PlayerState) => void) => {
+        set((state) => {
+            updater(state.player);
+            return {
+                player: {
+                    ...state.player,
+                },
+            };
+        });
+    },
     player: {
         farm: new Farm(
             DEFAULTS.farmSize.width,
@@ -42,12 +55,20 @@ export const useStore = createState<State>((set) => ({
     },
 
     defaultActions: [
+        new BuildOnFarmAction(
+            'Build Stable(s)',
+            { wood: 2 },
+            'stable',
+            'empty',
+            Infinity
+        ),
         new TakeResourceAction('3 Wood', 'wood', 3, true),
         new TakeResourceAction('1 Clay', 'clay', 1, true),
         new TakeResourceAction('1 Reed', 'reed', 1, true),
         new TakeResourceAction('Fishing Pond', 'food', 1, true),
         new TakeResourceAction('Take 1 Grain', 'grain', 1),
-        new BuildOnFarmAction('Plow 1 Field', 'field', 'empty'),
+        new BuildOnFarmAction('Plow 1 Field', {}, 'field', 'empty', 2),
+        new TakeResourceAction('Day Laborer', 'food', 2),
     ],
     rounds: DEFAULTS.rounds,
 
@@ -155,34 +176,58 @@ export const useStore = createState<State>((set) => ({
         });
     },
 
-    setBuildResponse: (row: number, column: number) => {
-        set((state) => {
-            if (!state.player.buildAction) {
-                return {};
-            }
+    // setBuildResponse: (row: number, column: number) => {
+    //     set((state) => {
+    //         if (!state.player.buildAction) {
+    //             return {};
+    //         }
 
+    //         return {
+    //             player: {
+    //                 ...state.player,
+    //                 buildAction: {
+    //                     ...state.player.buildAction,
+    //                     response: [
+    //                         {
+    //                             row,
+    //                             column,
+    //                         },
+    //                     ],
+    //                 },
+    //             },
+    //         };
+    //     });
+
+    //     set((state) => {
+    //         if (state.player.buildAction) {
+    //             state.executeActionTile(
+    //                 state.player.buildAction?.request.action
+    //             );
+    //         }
+
+    //         return {};
+    //     });
+    // },
+
+    makeInputRequest: (request) => {
+        set((state) => {
             return {
                 player: {
                     ...state.player,
-                    buildAction: {
-                        ...state.player.buildAction,
-                        response: {
-                            row,
-                            column,
-                        },
-                    },
+                    inputRequest: request,
                 },
             };
         });
+    },
 
+    cancelInputRequest: () => {
         set((state) => {
-            if (state.player.buildAction) {
-                state.executeActionTile(
-                    state.player.buildAction?.request.action
-                );
-            }
-
-            return {};
+            return {
+                player: {
+                    ...state.player,
+                    inputRequest: undefined,
+                },
+            };
         });
     },
 }));

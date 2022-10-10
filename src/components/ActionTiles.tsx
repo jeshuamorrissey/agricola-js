@@ -1,4 +1,6 @@
+import { useCallback } from 'react';
 import { Action } from '../systems/actions/action';
+import { useStore } from '../systems/state';
 
 export type ActionsByStage = Record<number, Action[]>;
 export type ActionOnClickFn = (action: Action) => void;
@@ -67,17 +69,44 @@ interface ActionTileComponentProps {
     onClick: ActionOnClickFn;
 }
 
-function ActionTileComponent({
-    action,
-    disabled,
-    onClick,
-}: ActionTileComponentProps) {
-    let backgroundColor = '';
-    if (disabled) {
-        backgroundColor = 'grey';
-    } else if (action.hasBeenUsed()) {
-        backgroundColor = 'red';
-    }
+function ActionTileComponent({ action }: ActionTileComponentProps) {
+    const {
+        isInHarvest,
+        resources,
+        makeInputRequest,
+        executeActionTile,
+        updatePlayer,
+    } = useStore((state) => ({
+        isInHarvest: state.isInHarvest,
+        resources: state.player.resources,
+        makeInputRequest: state.makeInputRequest,
+        executeActionTile: state.executeActionTile,
+        updatePlayer: state.updatePlayer,
+    }));
+
+    const getBackgroundColor = useCallback(() => {
+        if (isInHarvest || !action.canBeRun(resources)) {
+            return 'grey';
+        } else if (action.hasBeenUsed()) {
+            return 'red';
+        }
+
+        return '';
+    }, [resources, action]);
+
+    const onActionClicked = useCallback(() => {
+        if (isInHarvest || !action.canBeRun(resources)) {
+            return;
+        }
+
+        const inputRequest = action.inputRequest(updatePlayer);
+        if (inputRequest) {
+            makeInputRequest(inputRequest);
+            return;
+        }
+
+        executeActionTile(action);
+    }, [resources, action, makeInputRequest, executeActionTile]);
 
     return (
         <div
@@ -86,9 +115,9 @@ function ActionTileComponent({
                 width: '9rem',
                 height: '12rem',
                 margin: '10px',
-                backgroundColor: backgroundColor,
+                backgroundColor: getBackgroundColor(),
             }}
-            onClick={() => onClick(action)}
+            onClick={onActionClicked}
         >
             {action.getName()}
         </div>

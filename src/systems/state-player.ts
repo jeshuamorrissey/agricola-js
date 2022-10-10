@@ -1,20 +1,34 @@
 import { Action } from './actions/action';
-import { Farm, FarmTile } from './farm';
+import { Farm, FarmCoordinate, FarmTile } from './farm';
 import { ResourceMap } from './resource';
 
 export type BuildActionCallbackFn = (row: number, column: number) => void;
+
+export interface BuildActionResponse {
+    row: number;
+    column: number;
+}
 
 export interface BuildAction {
     request: {
         action: Action;
         possibleTileTypes: FarmTile[];
+        availableToBuild: number;
+        // costPerTile: Partial<ResourceMap>;
     };
 
-    response?: {
-        row: number;
-        column: number;
-    };
+    response?: BuildActionResponse[];
 }
+
+export interface FarmTileInputRequest {
+    minTiles: number;
+    maxTiles: number;
+    costPerTile: Partial<ResourceMap>;
+    isValidTile: (farm: Farm, location: FarmCoordinate) => boolean;
+    onRequestSatisfied: (tiles: FarmCoordinate[]) => void;
+}
+
+export type InputRequest = FarmTileInputRequest;
 
 export interface PlayerState {
     farm: Farm;
@@ -23,5 +37,5 @@ export interface PlayerState {
     resources: ResourceMap;
 
     // State used to describe what to do for specific actions.
-    buildAction?: BuildAction;
+    inputRequest?: InputRequest;
 }

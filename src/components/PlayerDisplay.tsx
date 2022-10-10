@@ -62,11 +62,7 @@ export function PlayerDisplay({
                     onClick={onClickActionTile}
                 />
             )}
-            <FarmComponent
-                farm={farm}
-                buildRequest={buildRequest}
-                buildResponse={buildResponse}
-            />
+            <FarmComponent />
         </div>
     );
 }
