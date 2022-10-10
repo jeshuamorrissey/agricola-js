@@ -1,63 +1,75 @@
 import { Farm } from '../farm';
-import { ResourceMap, Resource } from '../resource';
-import { InputRequest, PlayerState } from '../state-player';
+import { ResourceMap, Resource, canAfford } from '../resource';
+import {
+    InputRequest,
+    PlayerState,
+    PlayerStateUpdateFn,
+} from '../state/state.player';
 
 export type InputTypeRequired = 'farm-tile';
 
+export interface ActionProps {
+    name: string;
+    cost?: Partial<ResourceMap>;
+}
+
 export abstract class Action {
-    private used: boolean = false;
-    constructor(
-        private readonly name: string,
-        private readonly cost: Partial<ResourceMap> = {}
-    ) {}
+    private readonly __name: string;
+    private readonly __cost: Partial<ResourceMap>;
 
-    getName() {
-        return this.name;
+    private __usedThisRound: boolean = false;
+
+    constructor({ name, cost = {} }: ActionProps) {
+        this.__name = name;
+        this.__cost = cost;
     }
 
-    getCostForResource(resource: Resource) {
-        return this.cost[resource] || 0;
+    get cost(): Partial<ResourceMap> {
+        return this.__cost;
     }
 
-    canBeRun(resources: ResourceMap): boolean {
-        for (const resource of Object.keys(this.cost)) {
-            if (
-                resources[resource as Resource] <
-                this.getCostForResource(resource as Resource)
-            ) {
-                return false;
-            }
-        }
-
-        return true;
+    get used(): boolean {
+        return this.__usedThisRound;
     }
 
-    hasBeenUsed(): boolean {
-        return this.used;
+    set used(val: boolean) {
+        this.__usedThisRound = val;
     }
 
-    resetHasBeenUsed() {
-        this.used = false;
+    /**
+     * Returns the name of the action.
+     *
+     * @returns The name of the action.
+     */
+    get name() {
+        return this.__name;
     }
 
-    prepare(state: PlayerState): boolean {
-        return true;
+    /**
+     * Modify the state to perform the action. Should return an InputRequest in the
+     * case that some input data is required.
+     * @param updatePlayerFn - A function which can be called with an update routine to
+     *                         modify the state.
+     * @returns An InputRequest if one is required, otherwise undefined.
+     */
+    abstract execute(
+        updatePlayerFn: PlayerStateUpdateFn
+    ): InputRequest | undefined;
+
+    /**
+     * Determine whether the given player can execute this action. This should return
+     * true if they can, false otherwise.
+     * @param player - The player to check.
+     */
+    canExecute(player: PlayerState): boolean {
+        return canAfford(player.resources, this.cost) && !this.used;
     }
 
-    performAction(state: PlayerState): boolean {
-        this.used = true;
-        return true;
-    }
-
-    postAction(state: PlayerState) {}
-
+    /**
+     * Advance this action to the next round. Some actions change each round (such as
+     * accumulating resources) so this will be called each time the round changes.
+     */
     advanceRound() {
-        this.used = false;
-    }
-
-    inputRequest(
-        updatePlayer: (updater: (player: PlayerState) => PlayerState) => void
-    ): InputRequest | undefined {
-        return undefined;
+        this.__usedThisRound = false;
     }
 }

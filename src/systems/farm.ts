@@ -32,6 +32,24 @@ export class Farm {
         return this.tiles[row][column];
     }
 
+    getTileMaybeUndefined(row: number, column: number): FarmTile | undefined {
+        const tileRow = this.tiles[row];
+        if (!tileRow) {
+            return undefined;
+        }
+
+        return tileRow[column];
+    }
+
+    getAdjacentTiles(row: number, column: number): (FarmTile | undefined)[] {
+        return [
+            this.getTileMaybeUndefined(row - 1, column),
+            this.getTileMaybeUndefined(row + 1, column),
+            this.getTileMaybeUndefined(row, column - 1),
+            this.getTileMaybeUndefined(row, column + 1),
+        ].filter((t) => t !== undefined);
+    }
+
     setTile(row: number, column: number, tile: FarmTile) {
         this.tiles[row][column] = tile;
     }

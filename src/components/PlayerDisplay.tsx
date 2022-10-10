@@ -1,6 +1,5 @@
 import { Farm } from '../systems/farm';
 import { ResourceMap } from '../systems/resource';
-import { BuildAction, BuildActionCallbackFn } from '../systems/state-player';
 import {
     ActionOnClickFn,
     ActionsByStage,
@@ -22,12 +21,7 @@ export interface PlayerDisplayProps {
     stage: number;
 
     // Callbacks.
-    onClickActionTile: ActionOnClickFn;
     onHarvestTriggered: () => void;
-
-    // Requests for information. Will be defined if request is active.
-    buildRequest?: BuildAction;
-    buildResponse?: BuildActionCallbackFn;
 }
 
 export function PlayerDisplay({
@@ -39,10 +33,7 @@ export function PlayerDisplay({
     remainingActions,
     round,
     stage,
-    onClickActionTile,
     onHarvestTriggered,
-    buildRequest,
-    buildResponse,
 }: PlayerDisplayProps) {
     return (
         <div>
@@ -54,13 +45,7 @@ export function PlayerDisplay({
                 <button onClick={onHarvestTriggered}>Trigger Harvest</button>
             )}
             {!gameOver && (
-                <ActionTilesComponent
-                    availableActions={availableActions}
-                    disableRoundActions={
-                        inHarvest || buildRequest !== undefined
-                    }
-                    onClick={onClickActionTile}
-                />
+                <ActionTilesComponent availableActions={availableActions} />
             )}
             <FarmComponent />
         </div>

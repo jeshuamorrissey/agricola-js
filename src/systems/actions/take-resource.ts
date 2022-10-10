@@ -1,42 +1,71 @@
-import { Farm } from '../farm';
-import { Resource, ResourceMap } from '../resource';
-import { PlayerState } from '../state-player';
-import { Action } from './action';
+import { giveResources, Resource } from '../resource';
+import { PlayerStateUpdateFn } from '../state/state.player';
+import { Action, ActionProps } from './action';
+
+export interface TakeResourceActionProps {
+    resource: Resource;
+    amountToTake: number;
+}
 
 export class TakeResourceAction extends Action {
-    private currentQuantity: number;
-    constructor(
-        name: string,
-        private readonly resource: Resource,
-        private readonly quantity: number,
-        private readonly accumulates: boolean = false
-    ) {
-        super(name);
+    private readonly __resource: Resource;
+    private readonly __amountToTake: number;
 
-        this.currentQuantity = quantity;
+    constructor({
+        resource,
+        amountToTake,
+        ...props
+    }: ActionProps & TakeResourceActionProps) {
+        super(props);
+
+        this.__resource = resource;
+        this.__amountToTake = amountToTake;
     }
 
-    override getName() {
-        return `${super.getName()} (${this.currentQuantity})`;
+    get resource(): Resource {
+        return this.__resource;
     }
 
-    override performAction(state: PlayerState) {
-        super.performAction(state);
+    get amountToTake(): number {
+        return this.__amountToTake;
+    }
 
-        const newQuantity =
-            state.resources[this.resource] + this.currentQuantity;
-        if (this.accumulates) {
-            this.currentQuantity = 0;
-        }
+    override execute(updatePlayerFn: PlayerStateUpdateFn): undefined {
+        updatePlayerFn((player) => {
+            player.resources = giveResources(player.resources, {
+                [this.resource]: this.amountToTake,
+            });
+        });
 
-        state.resources[this.resource] = newQuantity;
-        return true;
+        return undefined;
+    }
+}
+
+export class TakeResourceAccumulatingAction extends TakeResourceAction {
+    private __currentQuantity;
+
+    constructor(props: ActionProps & TakeResourceActionProps) {
+        super(props);
+
+        this.__currentQuantity = props.amountToTake;
+    }
+
+    override get name() {
+        return `${super.name} (${this.__currentQuantity})`;
+    }
+
+    override execute(updatePlayerFn: PlayerStateUpdateFn): undefined {
+        updatePlayerFn((player) => {
+            player.resources[this.resource] += this.__currentQuantity;
+            this.__currentQuantity = 0;
+        });
+
+        return undefined;
     }
 
     override advanceRound() {
         super.advanceRound();
-        if (this.accumulates) {
-            this.currentQuantity += this.quantity;
-        }
+
+        this.__currentQuantity += this.amountToTake;
     }
 }

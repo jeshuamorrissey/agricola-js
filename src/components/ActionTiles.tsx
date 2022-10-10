@@ -1,20 +1,16 @@
 import { useCallback } from 'react';
 import { Action } from '../systems/actions/action';
-import { useStore } from '../systems/state';
+import { useStore } from '../systems/state/useStore';
 
 export type ActionsByStage = Record<number, Action[]>;
 export type ActionOnClickFn = (action: Action) => void;
 
 export interface ActionTilesComponentProps {
     availableActions: ActionsByStage;
-    disableRoundActions: boolean;
-    onClick: ActionOnClickFn;
 }
 
 export function ActionTilesComponent({
     availableActions,
-    disableRoundActions,
-    onClick,
 }: ActionTilesComponentProps) {
     return (
         <div>
@@ -23,8 +19,6 @@ export function ActionTilesComponent({
                     key={`action-row-${stageId}`}
                     actions={actions}
                     stageId={Number.parseInt(stageId)}
-                    onClick={onClick}
-                    disabled={disableRoundActions}
                 />
             ))}
         </div>
@@ -34,16 +28,9 @@ export function ActionTilesComponent({
 interface ActionRowComponentProps {
     actions: Action[];
     stageId: number;
-    disabled: boolean;
-    onClick: ActionOnClickFn;
 }
 
-function ActionRowComponent({
-    actions,
-    stageId,
-    disabled,
-    onClick,
-}: ActionRowComponentProps) {
+function ActionRowComponent({ actions, stageId }: ActionRowComponentProps) {
     return (
         <div
             style={{
@@ -54,8 +41,6 @@ function ActionRowComponent({
             {actions.map((action, tileIdx) => (
                 <ActionTileComponent
                     key={`action-tile-${stageId}-${tileIdx}`}
-                    disabled={disabled}
-                    onClick={onClick}
                     action={action}
                 />
             ))}
@@ -65,48 +50,30 @@ function ActionRowComponent({
 
 interface ActionTileComponentProps {
     action: Action;
-    disabled: boolean;
-    onClick: ActionOnClickFn;
 }
 
 function ActionTileComponent({ action }: ActionTileComponentProps) {
-    const {
-        isInHarvest,
-        resources,
-        makeInputRequest,
-        executeActionTile,
-        updatePlayer,
-    } = useStore((state) => ({
+    const { player, isInHarvest, executeActionTile } = useStore((state) => ({
+        player: state.player,
         isInHarvest: state.isInHarvest,
-        resources: state.player.resources,
-        makeInputRequest: state.makeInputRequest,
         executeActionTile: state.executeActionTile,
-        updatePlayer: state.updatePlayer,
     }));
 
     const getBackgroundColor = useCallback(() => {
-        if (isInHarvest || !action.canBeRun(resources)) {
+        if (player.inputRequest || isInHarvest || !action.canExecute(player)) {
             return 'grey';
-        } else if (action.hasBeenUsed()) {
-            return 'red';
         }
 
         return '';
-    }, [resources, action]);
+    }, [isInHarvest, player, action]);
 
     const onActionClicked = useCallback(() => {
-        if (isInHarvest || !action.canBeRun(resources)) {
-            return;
-        }
-
-        const inputRequest = action.inputRequest(updatePlayer);
-        if (inputRequest) {
-            makeInputRequest(inputRequest);
+        if (player.inputRequest || isInHarvest || !action.canExecute(player)) {
             return;
         }
 
         executeActionTile(action);
-    }, [resources, action, makeInputRequest, executeActionTile]);
+    }, [isInHarvest, player, action, executeActionTile]);
 
     return (
         <div
@@ -119,7 +86,7 @@ function ActionTileComponent({ action }: ActionTileComponentProps) {
             }}
             onClick={onActionClicked}
         >
-            {action.getName()}
+            {action.name}
         </div>
     );
 }

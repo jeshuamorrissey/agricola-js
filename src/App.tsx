@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActionsByStage } from './components/ActionTiles';
 import { PlayerDisplay } from './components/PlayerDisplay';
-import { useStore } from './systems/state';
+import { useStore } from './systems/state/useStore';
 
 export function App() {
     const state = useStore();
@@ -28,6 +28,12 @@ export function App() {
         setActionsByStage(newactionsByStage);
     }, [state.defaultActions, state.rounds, state.currentRound]);
 
+    useEffect(() => {
+        if (state.player.remainingActions === 0) {
+            state.advanceRound();
+        }
+    }, [state]);
+
     return (
         <div>
             <PlayerDisplay
@@ -39,13 +45,6 @@ export function App() {
                 remainingActions={state.player.remainingActions}
                 round={state.currentRound + 1}
                 stage={state.rounds[state.currentRound].stage}
-                onClickActionTile={(action) => {
-                    if (state.isInHarvest) {
-                        return;
-                    }
-
-                    state.executeActionTile(action);
-                }}
                 onHarvestTriggered={() => state.harvest()}
             />
         </div>

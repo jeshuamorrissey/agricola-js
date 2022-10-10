@@ -45,59 +45,115 @@ export const DEFAULTS: DefaultValues = {
     rounds: [
         {
             stage: 1,
-            newAction: new TakeResourceAction('Stage 1.1', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 1.1',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 1,
-            newAction: new TakeResourceAction('Stage 1.2', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 1.2',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 1,
-            newAction: new TakeResourceAction('Stage 1.3', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 1.3',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 1,
-            newAction: new TakeResourceAction('Stage 1.4', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 1.4',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 2,
-            newAction: new TakeResourceAction('Stage 2.1', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 2.1',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 2,
-            newAction: new TakeResourceAction('Stage 2.2', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 2.2',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 2,
-            newAction: new TakeResourceAction('Stage 2.3', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 2.3',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 3,
-            newAction: new TakeResourceAction('Stage 3.1', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 3.1',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 3,
-            newAction: new TakeResourceAction('Stage 3.2', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 3.2',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 4,
-            newAction: new TakeResourceAction('Stage 4.1', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 4.1',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 4,
-            newAction: new TakeResourceAction('Stage 4.2', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 4.2',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 5,
-            newAction: new TakeResourceAction('Stage 5.1', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 5.1',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 5,
-            newAction: new TakeResourceAction('Stage 5.2', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 5.2',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
         {
             stage: 6,
-            newAction: new TakeResourceAction('Stage 6.1', 'food', 10, false),
+            newAction: new TakeResourceAction({
+                name: 'Stage 6.1',
+                resource: 'food',
+                amountToTake: 10,
+            }),
         },
     ],
 };
