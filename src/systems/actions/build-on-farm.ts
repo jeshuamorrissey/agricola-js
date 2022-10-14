@@ -42,28 +42,30 @@ export class BuildOnFarmAction extends Action {
 
     override execute(
         updatePlayerFn: PlayerStateUpdateFn
-    ): FarmTileInputRequest {
-        return {
-            minTiles: this.__minTilesToBuild,
-            maxTiles: this.__maxTilesToBuild,
-            costPerTile: this.cost,
-            isValidTile: this.__isValidTileFn,
-            onRequestSatisfied: (tiles) => {
-                updatePlayerFn((player) => {
-                    for (const tile of tiles) {
-                        player.farm.setTile(
-                            tile.row,
-                            tile.column,
-                            this.__tileToBuild
-                        );
+    ): FarmTileInputRequest[] {
+        return [
+            {
+                minTiles: this.__minTilesToBuild,
+                maxTiles: this.__maxTilesToBuild,
+                costPerTile: this.cost,
+                isValidTile: this.__isValidTileFn,
+                onRequestSatisfied: (tiles) => {
+                    updatePlayerFn((player) => {
+                        for (const tile of tiles) {
+                            player.farm.setTile(
+                                tile.row,
+                                tile.column,
+                                this.__tileToBuild
+                            );
 
-                        player.resources = payResources(
-                            player.resources,
-                            this.cost
-                        );
-                    }
-                });
+                            player.resources = payResources(
+                                player.resources,
+                                this.cost
+                            );
+                        }
+                    });
+                },
             },
-        };
+        ];
     }
 }

@@ -10,12 +10,14 @@ export type StateSetter = (
     replace?: boolean | undefined
 ) => void;
 
+export type StateGetter = () => State;
+
 export interface State {
     // Information for the various players. For now, only make it one player.
     player: PlayerState;
 
     // Static state.
-    defaultActions: Action[];
+    defaultActions: (Action | Action[])[];
     rounds: Round[];
 
     // Keep track of the progress through the game.
@@ -26,7 +28,8 @@ export interface State {
     isInHarvest: boolean;
 
     // Mutation functions.
-    executeActionTile: (action: Action) => void;
+    setActionQueue: (actions: Action[]) => void;
+    executeNextAction: () => void;
     advanceRound: () => void;
     harvest: () => void;
     cancelInputRequest: () => void;

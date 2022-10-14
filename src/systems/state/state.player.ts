@@ -1,3 +1,4 @@
+import { Action } from '../actions/action';
 import { Farm, FarmCoordinate } from '../farm';
 import { ResourceMap } from '../resource';
 
@@ -12,6 +13,7 @@ export interface PlayerState {
     resources: ResourceMap;
 
     // State used to describe what to do for specific actions.
+    actionSequence: Action[];
     inputRequest?: InputRequest;
 }
 

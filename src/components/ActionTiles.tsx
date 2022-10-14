@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Action } from '../systems/actions/action';
 import { useStore } from '../systems/state/useStore';
 
-export type ActionsByStage = Record<number, Action[]>;
+export type ActionsByStage = Record<number, (Action | Action[])[]>;
 export type ActionOnClickFn = (action: Action) => void;
 
 export interface ActionTilesComponentProps {
@@ -26,7 +26,7 @@ export function ActionTilesComponent({
 }
 
 interface ActionRowComponentProps {
-    actions: Action[];
+    actions: (Action | Action[])[];
     stageId: number;
 }
 
@@ -49,31 +49,53 @@ function ActionRowComponent({ actions, stageId }: ActionRowComponentProps) {
 }
 
 interface ActionTileComponentProps {
-    action: Action;
+    action: Action | Action[];
 }
 
 function ActionTileComponent({ action }: ActionTileComponentProps) {
-    const { player, isInHarvest, executeActionTile } = useStore((state) => ({
-        player: state.player,
-        isInHarvest: state.isInHarvest,
-        executeActionTile: state.executeActionTile,
-    }));
+    const { player, isInHarvest, executeNextAction, setActionQueue } = useStore(
+        (state) => ({
+            player: state.player,
+            isInHarvest: state.isInHarvest,
+            executeNextAction: state.executeNextAction,
+            setActionQueue: state.setActionQueue,
+        })
+    );
 
     const getBackgroundColor = useCallback(() => {
-        if (player.inputRequest || isInHarvest || !action.canExecute(player)) {
-            return 'grey';
-        }
+        // if (player.inputRequest || isInHarvest || !action.canExecute(player)) {
+        //     return 'grey';
+        // }
 
         return '';
     }, [isInHarvest, player, action]);
 
     const onActionClicked = useCallback(() => {
-        if (player.inputRequest || isInHarvest || !action.canExecute(player)) {
-            return;
+        // if (player.inputRequest || isInHarvest || !action.canExecute(player)) {
+        //     return;
+        // }
+
+        if (action instanceof Action) {
+            setActionQueue([action]);
+        } else {
+            setActionQueue(action);
         }
 
-        executeActionTile(action);
-    }, [isInHarvest, player, action, executeActionTile]);
+        executeNextAction();
+    }, [isInHarvest, player, action, executeNextAction, setActionQueue]);
+
+    let name;
+    if (action instanceof Action) {
+        name = action.name;
+    } else {
+        for (const a of action) {
+            if (name) {
+                name = `${name} + ${a.name}`;
+            } else {
+                name = a.name;
+            }
+        }
+    }
 
     return (
         <div
@@ -86,7 +108,7 @@ function ActionTileComponent({ action }: ActionTileComponentProps) {
             }}
             onClick={onActionClicked}
         >
-            {action.name}
+            {name}
         </div>
     );
 }

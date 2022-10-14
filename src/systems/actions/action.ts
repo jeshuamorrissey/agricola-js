@@ -54,7 +54,7 @@ export abstract class Action {
      */
     abstract execute(
         updatePlayerFn: PlayerStateUpdateFn
-    ): InputRequest | undefined;
+    ): InputRequest[] | undefined;
 
     /**
      * Determine whether the given player can execute this action. This should return

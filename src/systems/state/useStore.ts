@@ -10,7 +10,7 @@ import { Farm } from '../farm';
 import {
     advanceRound,
     cancelInputRequest,
-    executeAction,
+    executeNextAction,
     harvest,
 } from './state.actions';
 import { State } from './state.model';
@@ -24,6 +24,7 @@ export const useStore = createState<State>((set, get) => ({
         ),
         numFamilyMembers: DEFAULTS.numFamilyMembers,
         remainingActions: DEFAULTS.numFamilyMembers,
+        actionSequence: [],
         resources: DEFAULTS.resources,
     },
 
@@ -67,44 +68,48 @@ export const useStore = createState<State>((set, get) => ({
             minTilesToBuild: 1,
             maxTilesToBuild: 1,
         }),
-        new BuildOnFarmAction({
-            name: 'Build Stable(s)',
-            cost: { wood: 2 },
-            tileToBuild: 'stable',
-            isValidTile: (farm, { row, column }) => {
-                return farm.getTile(row, column) === 'empty';
-            },
-            minTilesToBuild: 0,
-            maxTilesToBuild: Infinity,
-        }),
-        new BuildOnFarmAction({
-            name: 'Build Room(s)',
-            cost: { wood: 5, reed: 2 },
-            tileToBuild: 'wood-house',
-            isValidTile: (farm, { row, column }, selectedTiles) => {
-                const adjacentSelectedTiles = selectedTiles.filter(
-                    (location) => {
-                        return (
-                            (location.row === row - 1 &&
-                                location.column === column) ||
-                            (location.row === row + 1 &&
-                                location.column === column) ||
-                            (location.row === row &&
-                                location.column === column - 1) ||
-                            (location.row === row &&
-                                location.column === column + 1)
-                        );
-                    }
-                );
+        [
+            new BuildOnFarmAction({
+                name: 'Build Stable(s)',
+                cost: { wood: 2 },
+                tileToBuild: 'stable',
+                isValidTile: (farm, { row, column }) => {
+                    return farm.getTile(row, column) === 'empty';
+                },
+                minTilesToBuild: 0,
+                maxTilesToBuild: Infinity,
+            }),
+            new BuildOnFarmAction({
+                name: 'Build Room(s)',
+                cost: { wood: 5, reed: 2 },
+                tileToBuild: 'wood-house',
+                isValidTile: (farm, { row, column }, selectedTiles) => {
+                    const adjacentSelectedTiles = selectedTiles.filter(
+                        (location) => {
+                            return (
+                                (location.row === row - 1 &&
+                                    location.column === column) ||
+                                (location.row === row + 1 &&
+                                    location.column === column) ||
+                                (location.row === row &&
+                                    location.column === column - 1) ||
+                                (location.row === row &&
+                                    location.column === column + 1)
+                            );
+                        }
+                    );
 
-                return (
-                    adjacentSelectedTiles.length > 0 ||
-                    farm.getAdjacentTiles(row, column).includes('wood-house')
-                );
-            },
-            minTilesToBuild: 0,
-            maxTilesToBuild: Infinity,
-        }),
+                    return (
+                        adjacentSelectedTiles.length > 0 ||
+                        farm
+                            .getAdjacentTiles(row, column)
+                            .includes('wood-house')
+                    );
+                },
+                minTilesToBuild: 0,
+                maxTilesToBuild: Infinity,
+            }),
+        ],
     ],
     rounds: DEFAULTS.rounds,
 
@@ -117,8 +122,19 @@ export const useStore = createState<State>((set, get) => ({
         set(harvest);
     },
 
-    executeActionTile: (action: Action) => {
-        executeAction(set, action);
+    setActionQueue: (actions: Action[]) => {
+        set((state) => {
+            return {
+                player: {
+                    ...state.player,
+                    actionSequence: [...actions],
+                },
+            };
+        });
+    },
+
+    executeNextAction: () => {
+        executeNextAction(get, set);
     },
 
     advanceRound: () => {

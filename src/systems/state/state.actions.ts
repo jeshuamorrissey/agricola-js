@@ -1,7 +1,8 @@
 import { DEFAULTS } from '../../game/defaults';
 import { Action } from '../actions/action';
 import { payResources } from '../resource';
-import { State, StateSetter } from './state.model';
+import { State, StateGetter, StateSetter } from './state.model';
+import { InputRequest } from './state.player';
 
 export function harvest(state: State) {
     const newFood = (state.player.resources['food'] -=
@@ -27,32 +28,57 @@ export function harvest(state: State) {
     };
 }
 
-export function executeAction(set: StateSetter, action: Action) {
-    if (action.used) {
+export function executeNextAction(get: StateGetter, set: StateSetter) {
+    let action = get().player.actionSequence[0];
+    console.log('got here', action);
+    if (!action) {
+        console.log('got here');
         return;
     }
 
+    set((state) => {
+        state.player.actionSequence.shift();
+        return {
+            player: {
+                ...state.player,
+                actionSequence: [...state.player.actionSequence.slice(1)],
+            },
+        };
+    });
+
     // Execute the command.
-    const inputRequest = action.execute((updateFn) => {
+    const inputRequests = action.execute((updateFn) => {
         set((state) => {
             action.used = true;
             updateFn(state.player);
+
+            if (state.player.actionSequence.length > 0) {
+                console.log('executing next action');
+                state.executeNextAction();
+
+                return {
+                    player: {
+                        ...state.player,
+                    },
+                };
+            }
+
             return {
                 player: {
                     ...state.player,
                     remainingActions: state.player.remainingActions - 1,
-                    inputRequest: undefined,
+                    inputRequests: undefined,
                 },
             };
         });
     });
 
-    if (inputRequest) {
+    if (inputRequests && inputRequests.length > 0) {
         set((state) => {
             return {
                 player: {
                     ...state.player,
-                    inputRequest,
+                    inputRequests,
                 },
             };
         });
@@ -71,8 +97,14 @@ export function advanceRound(state: State) {
     const currentRoundObj = state.rounds[state.currentRound];
     const nextRoundObj = state.rounds[nextRound];
 
-    for (const action of state.defaultActions) {
-        action.advanceRound();
+    for (const actionSet of state.defaultActions) {
+        if (actionSet instanceof Action) {
+            actionSet.advanceRound();
+        } else {
+            for (const action of actionSet) {
+                action.advanceRound();
+            }
+        }
     }
 
     for (const round of state.rounds) {
