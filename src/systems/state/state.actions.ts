@@ -1,8 +1,8 @@
 import { DEFAULTS } from '../../game/defaults';
 import { Action } from '../actions/action';
-import { payResources } from '../resource';
+import { MultiAction } from '../actions/multi-action';
 import { State, StateGetter, StateSetter } from './state.model';
-import { InputRequest } from './state.player';
+import { InputRequest, PlayerState } from './state.player';
 
 export function harvest(state: State) {
     const newFood = (state.player.resources['food'] -=
@@ -28,61 +28,45 @@ export function harvest(state: State) {
     };
 }
 
-export function executeNextAction(get: StateGetter, set: StateSetter) {
-    let action = get().player.actionSequence[0];
-    console.log('got here', action);
-    if (!action) {
-        console.log('got here');
-        return;
-    }
+export function executeAction(
+    get: StateGetter,
+    set: StateSetter,
+    action: Action
+) {
+    const setInputRequest = (inputRequest: InputRequest | undefined) => {
+        if (inputRequest) {
+            set((state) => {
+                return {
+                    player: {
+                        ...state.player,
+                        inputRequest,
+                    },
+                };
+            });
+        }
+    };
 
-    set((state) => {
-        state.player.actionSequence.shift();
-        return {
-            player: {
-                ...state.player,
-                actionSequence: [...state.player.actionSequence.slice(1)],
-            },
-        };
-    });
-
-    // Execute the command.
-    const inputRequests = action.execute((updateFn) => {
+    const updatePlayerFn = (updateFn: (player: PlayerState) => void) => {
         set((state) => {
             action.used = true;
             updateFn(state.player);
 
-            if (state.player.actionSequence.length > 0) {
-                console.log('executing next action');
-                state.executeNextAction();
-
-                return {
-                    player: {
-                        ...state.player,
-                    },
-                };
+            if (action instanceof MultiAction && !action.actionsComplete) {
+                state.executeAction(action);
+                return {};
             }
 
             return {
                 player: {
                     ...state.player,
                     remainingActions: state.player.remainingActions - 1,
-                    inputRequests: undefined,
+                    inputRequest: undefined,
                 },
             };
         });
-    });
+    };
 
-    if (inputRequests && inputRequests.length > 0) {
-        set((state) => {
-            return {
-                player: {
-                    ...state.player,
-                    inputRequests,
-                },
-            };
-        });
-    }
+    setInputRequest(action.execute(get().player, updatePlayerFn));
 }
 
 export function advanceRound(state: State) {
@@ -97,14 +81,8 @@ export function advanceRound(state: State) {
     const currentRoundObj = state.rounds[state.currentRound];
     const nextRoundObj = state.rounds[nextRound];
 
-    for (const actionSet of state.defaultActions) {
-        if (actionSet instanceof Action) {
-            actionSet.advanceRound();
-        } else {
-            for (const action of actionSet) {
-                action.advanceRound();
-            }
-        }
+    for (const action of state.defaultActions) {
+        action.advanceRound();
     }
 
     for (const round of state.rounds) {

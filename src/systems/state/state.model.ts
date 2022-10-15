@@ -17,7 +17,7 @@ export interface State {
     player: PlayerState;
 
     // Static state.
-    defaultActions: (Action | Action[])[];
+    defaultActions: Action[];
     rounds: Round[];
 
     // Keep track of the progress through the game.
@@ -29,7 +29,7 @@ export interface State {
 
     // Mutation functions.
     setActionQueue: (actions: Action[]) => void;
-    executeNextAction: () => void;
+    executeAction: (action: Action) => void;
     advanceRound: () => void;
     harvest: () => void;
     cancelInputRequest: () => void;

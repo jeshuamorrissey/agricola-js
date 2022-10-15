@@ -1,5 +1,5 @@
 import { giveResources, Resource } from '../resource';
-import { PlayerStateUpdateFn } from '../state/state.player';
+import { PlayerState, PlayerStateUpdateFn } from '../state/state.player';
 import { Action, ActionProps } from './action';
 
 export interface TakeResourceActionProps {
@@ -30,7 +30,10 @@ export class TakeResourceAction extends Action {
         return this.__amountToTake;
     }
 
-    override execute(updatePlayerFn: PlayerStateUpdateFn): undefined {
+    override execute(
+        _: PlayerState,
+        updatePlayerFn: PlayerStateUpdateFn
+    ): undefined {
         updatePlayerFn((player) => {
             player.resources = giveResources(player.resources, {
                 [this.resource]: this.amountToTake,
@@ -54,7 +57,10 @@ export class TakeResourceAccumulatingAction extends TakeResourceAction {
         return `${super.name} (${this.__currentQuantity})`;
     }
 
-    override execute(updatePlayerFn: PlayerStateUpdateFn): undefined {
+    override execute(
+        _: PlayerState,
+        updatePlayerFn: PlayerStateUpdateFn
+    ): undefined {
         updatePlayerFn((player) => {
             player.resources[this.resource] += this.__currentQuantity;
             this.__currentQuantity = 0;

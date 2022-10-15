@@ -2,13 +2,16 @@ import { useCallback, useState } from 'react';
 import { FarmCoordinate, FarmTile } from '../systems/farm';
 import { maxNumPurchases } from '../systems/resource';
 import { useStore } from '../systems/state/useStore';
+import { isFarmTileInputRequest } from '../systems/state/state.player';
 
 export function FarmComponent() {
     const { inputRequest, farm, resources, cancelInputRequest } = useStore(
         (state) => ({
             farm: state.player.farm,
             resources: state.player.resources,
-            inputRequest: state.player.inputRequest,
+            inputRequest: isFarmTileInputRequest(state.player.inputRequest)
+                ? state.player.inputRequest
+                : undefined,
             cancelInputRequest: state.cancelInputRequest,
         })
     );
@@ -84,6 +87,7 @@ export function FarmComponent() {
 
     return (
         <div>
+            {inputRequest && <p>Current action: {inputRequest.actionName}</p>}
             {inputRequest && selectedTiles.length >= inputRequest.minTiles && (
                 <button
                     onClick={() => {

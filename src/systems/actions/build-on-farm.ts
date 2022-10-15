@@ -2,6 +2,7 @@ import { Farm, FarmCoordinate, FarmTile } from '../farm';
 import { payResources } from '../resource';
 import {
     FarmTileInputRequest,
+    PlayerState,
     PlayerStateUpdateFn,
 } from '../state/state.player';
 import { Action, ActionProps } from './action';
@@ -41,31 +42,32 @@ export class BuildOnFarmAction extends Action {
     }
 
     override execute(
+        _: PlayerState,
         updatePlayerFn: PlayerStateUpdateFn
-    ): FarmTileInputRequest[] {
-        return [
-            {
-                minTiles: this.__minTilesToBuild,
-                maxTiles: this.__maxTilesToBuild,
-                costPerTile: this.cost,
-                isValidTile: this.__isValidTileFn,
-                onRequestSatisfied: (tiles) => {
-                    updatePlayerFn((player) => {
-                        for (const tile of tiles) {
-                            player.farm.setTile(
-                                tile.row,
-                                tile.column,
-                                this.__tileToBuild
-                            );
+    ): FarmTileInputRequest {
+        return {
+            id: 'farm-tile-input-request',
+            actionName: this.name,
+            minTiles: this.__minTilesToBuild,
+            maxTiles: this.__maxTilesToBuild,
+            costPerTile: this.cost,
+            isValidTile: this.__isValidTileFn,
+            onRequestSatisfied: (tiles) => {
+                updatePlayerFn((player) => {
+                    for (const tile of tiles) {
+                        player.farm.setTile(
+                            tile.row,
+                            tile.column,
+                            this.__tileToBuild
+                        );
 
-                            player.resources = payResources(
-                                player.resources,
-                                this.cost
-                            );
-                        }
-                    });
-                },
+                        player.resources = payResources(
+                            player.resources,
+                            this.cost
+                        );
+                    }
+                });
             },
-        ];
+        };
     }
 }

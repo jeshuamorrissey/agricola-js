@@ -1,12 +1,9 @@
-import { Farm } from '../farm';
-import { ResourceMap, Resource, canAfford } from '../resource';
+import { ResourceMap, canAfford } from '../resource';
 import {
     InputRequest,
     PlayerState,
     PlayerStateUpdateFn,
 } from '../state/state.player';
-
-export type InputTypeRequired = 'farm-tile';
 
 export interface ActionProps {
     name: string;
@@ -53,8 +50,9 @@ export abstract class Action {
      * @returns An InputRequest if one is required, otherwise undefined.
      */
     abstract execute(
+        player: PlayerState,
         updatePlayerFn: PlayerStateUpdateFn
-    ): InputRequest[] | undefined;
+    ): InputRequest | undefined;
 
     /**
      * Determine whether the given player can execute this action. This should return

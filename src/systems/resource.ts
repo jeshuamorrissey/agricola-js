@@ -56,12 +56,14 @@ export function maxNumPurchases(
     payment: Partial<ResourceMap>
 ): number {
     let numPurchases = Infinity;
+    console.log(payment);
     for (const resourceStr in payment) {
         const resource = resourceStr as Resource;
         const numPurchasesForResource = Math.floor(
             availableResources[resource] / (payment[resource] || 0)
         );
-        numPurchases = Math.max(numPurchasesForResource, numPurchases);
+
+        numPurchases = Math.min(numPurchasesForResource, numPurchases);
     }
 
     return numPurchases;
