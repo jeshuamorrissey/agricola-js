@@ -1,8 +1,13 @@
 import { useCallback } from 'react';
 import { Action } from '../systems/actions/action';
 import { MultiAction } from '../systems/actions/multi-action';
+import {
+    TakeResourceAccumulatingAction,
+    TakeResourceAction,
+} from '../systems/actions/take-resource';
 import { useStore } from '../systems/state/useStore';
 import { ActionTileCost } from './ActionTileCost';
+import { ActionTileResource } from './ActionTileResource';
 
 export type ActionsByStage = Record<number, Action[]>;
 export type ActionOnClickFn = (action: Action) => void;
@@ -98,32 +103,53 @@ function ActionTileComponent({ action }: ActionTileComponentProps) {
             onClick={onActionClicked}
         >
             {displayActions.map((action, idx) => {
-                if (idx === displayActions.length - 1) {
-                    return (
-                        <div key={`action-${idx}`}>
-                            <span>{action.name}</span>
-                            <ActionTileCost
-                                cost={action.getCost(player)}
-                                costPerTileName={action.costPerTileName()}
-                            />
+                let suffix = <></>;
+                if (idx !== displayActions.length - 1) {
+                    suffix = (
+                        <div>
+                            <span>and/or</span>
                         </div>
                     );
+                }
+
+                let resourceCost = <></>;
+                if (action instanceof TakeResourceAction) {
+                    resourceCost = (
+                        <ActionTileResource
+                            resource={action.resource}
+                            amount={action.quantity}
+                        />
+                    );
                 } else {
-                    return (
-                        <>
-                            <div>
-                                <span>{action.name}</span>
-                                <ActionTileCost
-                                    cost={action.getCost(player)}
-                                    costPerTileName={action.costPerTileName()}
-                                />
-                            </div>
-                            <div>
-                                <span>and/or</span>
-                            </div>
-                        </>
+                    resourceCost = (
+                        <ActionTileCost
+                            cost={action.getCost(player)}
+                            costPerTileName={action.costPerTileName()}
+                        />
                     );
                 }
+
+                let accumulatesNotice = <></>;
+                if (action instanceof TakeResourceAccumulatingAction) {
+                    accumulatesNotice = (
+                        <div
+                            style={{
+                                fontStyle: 'italic',
+                            }}
+                        >
+                            accumulates
+                        </div>
+                    );
+                }
+
+                return (
+                    <>
+                        <div style={{ fontWeight: 'bold' }}>{action.name}</div>
+                        {accumulatesNotice}
+                        {resourceCost}
+                        {suffix}
+                    </>
+                );
             })}
         </div>
     );

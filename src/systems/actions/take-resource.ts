@@ -30,6 +30,10 @@ export class TakeResourceAction extends Action {
         return this.__amountToTake;
     }
 
+    get quantity(): number {
+        return this.amountToTake;
+    }
+
     override execute(
         _: PlayerState,
         updatePlayerFn: PlayerStateUpdateFn
@@ -53,8 +57,8 @@ export class TakeResourceAccumulatingAction extends TakeResourceAction {
         this.__currentQuantity = props.amountToTake;
     }
 
-    override get name() {
-        return `${super.name} (${this.__currentQuantity})`;
+    override get quantity(): number {
+        return this.__currentQuantity;
     }
 
     override execute(

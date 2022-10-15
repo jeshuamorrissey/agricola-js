@@ -33,7 +33,7 @@ export const useStore = createState<State>((set, get) => ({
         new TakeResourceAccumulatingAction({
             name: '3 Wood',
             resource: 'wood',
-            amountToTake: 5,
+            amountToTake: 3,
         }),
         new TakeResourceAccumulatingAction({
             name: '1 Clay',
@@ -41,14 +41,9 @@ export const useStore = createState<State>((set, get) => ({
             amountToTake: 1,
         }),
         new TakeResourceAccumulatingAction({
-            name: '1 Stone',
-            resource: 'stone',
-            amountToTake: 5,
-        }),
-        new TakeResourceAccumulatingAction({
             name: '1 Reed',
             resource: 'reed',
-            amountToTake: 2,
+            amountToTake: 1,
         }),
         new TakeResourceAccumulatingAction({
             name: 'Fishing Pond',
