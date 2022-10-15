@@ -25,6 +25,10 @@ export class MultiAction extends Action {
         this.__mode = mode;
     }
 
+    get actions(): Action[] {
+        return this.__actions;
+    }
+
     get actionsComplete(): boolean {
         return this.__actions[this.__nextAction] === undefined;
     }

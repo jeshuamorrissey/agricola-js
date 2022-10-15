@@ -41,6 +41,11 @@ export const useStore = createState<State>((set, get) => ({
             amountToTake: 1,
         }),
         new TakeResourceAccumulatingAction({
+            name: '1 Stone',
+            resource: 'stone',
+            amountToTake: 5,
+        }),
+        new TakeResourceAccumulatingAction({
             name: '1 Reed',
             resource: 'reed',
             amountToTake: 2,
@@ -63,6 +68,7 @@ export const useStore = createState<State>((set, get) => ({
         new BuildOnFarmAction({
             name: 'Plow 1 Field',
             tileToBuild: 'field',
+            costPerTileName: 'field',
             isValidTile: (farm, { row, column }) => {
                 return farm.getTile(row, column) === 'empty';
             },
@@ -75,8 +81,18 @@ export const useStore = createState<State>((set, get) => ({
             actions: [
                 new BuildOnFarmAction({
                     name: 'Build Room(s)',
-                    cost: { wood: 5, reed: 2 },
-                    tileToBuild: 'wood-house',
+                    costPerTileName: 'room',
+                    cost: (player) => {
+                        switch (player.farm.getHouseType()) {
+                            case 'wood-house':
+                                return { wood: 5, reed: 2 };
+                            case 'clay-house':
+                                return { clay: 5, reed: 2 };
+                            case 'stone-house':
+                                return { stone: 5, reed: 2 };
+                        }
+                    },
+                    tileToBuild: (player) => player.farm.getHouseType(),
                     isValidTile: (farm, { row, column }, selectedTiles) => {
                         const adjacentSelectedTiles = selectedTiles.filter(
                             (location) => {
@@ -97,7 +113,7 @@ export const useStore = createState<State>((set, get) => ({
                             adjacentSelectedTiles.length > 0 ||
                             farm
                                 .getAdjacentTiles(row, column)
-                                .includes('wood-house')
+                                .includes(farm.getHouseType())
                         );
                     },
                     minTilesToBuild: 0,
@@ -105,6 +121,7 @@ export const useStore = createState<State>((set, get) => ({
                 }),
                 new BuildOnFarmAction({
                     name: 'Build Stable(s)',
+                    costPerTileName: 'stable',
                     cost: { wood: 2 },
                     tileToBuild: 'stable',
                     isValidTile: (farm, { row, column }) => {

@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 import { Action } from '../systems/actions/action';
+import { MultiAction } from '../systems/actions/multi-action';
 import { useStore } from '../systems/state/useStore';
+import { ActionTileCost } from './ActionTileCost';
 
 export type ActionsByStage = Record<number, Action[]>;
 export type ActionOnClickFn = (action: Action) => void;
@@ -75,6 +77,11 @@ function ActionTileComponent({ action }: ActionTileComponentProps) {
         executeAction(action);
     }, [isInHarvest, player, action, executeAction]);
 
+    let displayActions = [action];
+    if (action instanceof MultiAction) {
+        displayActions = action.actions;
+    }
+
     return (
         <div
             style={{
@@ -82,11 +89,42 @@ function ActionTileComponent({ action }: ActionTileComponentProps) {
                 width: '9rem',
                 height: '12rem',
                 margin: '10px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-evenly',
+                textAlign: 'center',
                 backgroundColor: getBackgroundColor(),
             }}
             onClick={onActionClicked}
         >
-            {action.name}
+            {displayActions.map((action, idx) => {
+                if (idx === displayActions.length - 1) {
+                    return (
+                        <div key={`action-${idx}`}>
+                            <span>{action.name}</span>
+                            <ActionTileCost
+                                cost={action.getCost(player)}
+                                costPerTileName={action.costPerTileName()}
+                            />
+                        </div>
+                    );
+                } else {
+                    return (
+                        <>
+                            <div>
+                                <span>{action.name}</span>
+                                <ActionTileCost
+                                    cost={action.getCost(player)}
+                                    costPerTileName={action.costPerTileName()}
+                                />
+                            </div>
+                            <div>
+                                <span>and/or</span>
+                            </div>
+                        </>
+                    );
+                }
+            })}
         </div>
     );
 }

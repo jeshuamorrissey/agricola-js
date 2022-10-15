@@ -7,22 +7,22 @@ import {
 
 export interface ActionProps {
     name: string;
-    cost?: Partial<ResourceMap>;
+    cost?:
+        | Partial<ResourceMap>
+        | ((player: PlayerState) => Partial<ResourceMap>);
 }
 
 export abstract class Action {
     private readonly __name: string;
-    private readonly __cost: Partial<ResourceMap>;
+    private readonly __cost:
+        | Partial<ResourceMap>
+        | ((player: PlayerState) => Partial<ResourceMap>);
 
     private __usedThisRound: boolean = false;
 
     constructor({ name, cost = {} }: ActionProps) {
         this.__name = name;
         this.__cost = cost;
-    }
-
-    get cost(): Partial<ResourceMap> {
-        return this.__cost;
     }
 
     get used(): boolean {
@@ -60,7 +60,19 @@ export abstract class Action {
      * @param player - The player to check.
      */
     canExecute(player: PlayerState): boolean {
-        return canAfford(player.resources, this.cost) && !this.used;
+        return canAfford(player.resources, this.getCost(player)) && !this.used;
+    }
+
+    getCost(player: PlayerState): Partial<ResourceMap> {
+        if (this.__cost instanceof Function) {
+            return this.__cost(player);
+        }
+
+        return this.__cost;
+    }
+
+    costPerTileName(): string | undefined {
+        return undefined;
     }
 
     /**

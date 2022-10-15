@@ -1,11 +1,6 @@
 export type FarmInitFn = (farm: Farm) => void;
-export type FarmTile =
-    | 'empty'
-    | 'wood-house'
-    | 'clay-house'
-    | 'stone-house'
-    | 'stable'
-    | 'field';
+export type HouseFarmTile = 'wood-house' | 'clay-house' | 'stone-house';
+export type FarmTile = 'empty' | 'stable' | 'field' | HouseFarmTile;
 
 export interface FarmCoordinate {
     row: number;
@@ -26,6 +21,22 @@ export class Farm {
         }
 
         initFarm(this);
+    }
+
+    getHouseType(): HouseFarmTile {
+        for (const row of this.tiles) {
+            for (const tile of row) {
+                if (
+                    tile === 'wood-house' ||
+                    tile === 'clay-house' ||
+                    tile === 'stone-house'
+                ) {
+                    return tile;
+                }
+            }
+        }
+
+        return 'wood-house';
     }
 
     getTile(row: number, column: number): FarmTile {

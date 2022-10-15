@@ -14,20 +14,25 @@ export type IsValidTileFn = (
 ) => boolean;
 
 export interface BuildOnFarmActionProps {
-    tileToBuild: FarmTile;
+    tileToBuild: FarmTile | ((player: PlayerState) => FarmTile);
+    costPerTileName: string;
     minTilesToBuild: number;
     maxTilesToBuild: number;
     isValidTile: IsValidTileFn;
 }
 
 export class BuildOnFarmAction extends Action {
-    private readonly __tileToBuild: FarmTile;
+    private readonly __tileToBuild:
+        | FarmTile
+        | ((player: PlayerState) => FarmTile);
+    private readonly __costPerTileName;
     private readonly __minTilesToBuild: number;
     private readonly __maxTilesToBuild: number;
     private readonly __isValidTileFn: IsValidTileFn;
 
     constructor({
         tileToBuild,
+        costPerTileName,
         minTilesToBuild = 1,
         maxTilesToBuild = 1,
         isValidTile,
@@ -36,13 +41,18 @@ export class BuildOnFarmAction extends Action {
         super(props);
 
         this.__tileToBuild = tileToBuild;
+        this.__costPerTileName = costPerTileName;
         this.__minTilesToBuild = minTilesToBuild;
         this.__maxTilesToBuild = maxTilesToBuild;
         this.__isValidTileFn = isValidTile;
     }
 
+    override costPerTileName(): string {
+        return this.__costPerTileName;
+    }
+
     override execute(
-        _: PlayerState,
+        player: PlayerState,
         updatePlayerFn: PlayerStateUpdateFn
     ): FarmTileInputRequest {
         return {
@@ -50,7 +60,7 @@ export class BuildOnFarmAction extends Action {
             actionName: this.name,
             minTiles: this.__minTilesToBuild,
             maxTiles: this.__maxTilesToBuild,
-            costPerTile: this.cost,
+            costPerTile: this.getCost(player),
             isValidTile: this.__isValidTileFn,
             onRequestSatisfied: (tiles) => {
                 updatePlayerFn((player) => {
@@ -58,12 +68,14 @@ export class BuildOnFarmAction extends Action {
                         player.farm.setTile(
                             tile.row,
                             tile.column,
-                            this.__tileToBuild
+                            this.__tileToBuild instanceof Function
+                                ? this.__tileToBuild(player)
+                                : this.__tileToBuild
                         );
 
                         player.resources = payResources(
                             player.resources,
-                            this.cost
+                            this.getCost(player)
                         );
                     }
                 });
