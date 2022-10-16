@@ -1,4 +1,5 @@
 import { Farm, FarmCoordinate, FarmTile } from '../farm';
+import { Occupation } from '../occupation';
 import { ResourceMap } from '../resource';
 
 export type PlayerStateUpdateFn = (
@@ -10,6 +11,8 @@ export interface PlayerState {
     numFamilyMembers: number;
     remainingActions: number;
     resources: ResourceMap;
+    playedOccupations: Occupation[];
+    availableOccupations: Occupation[];
 
     // State used to describe what to do for specific actions.
     inputRequest?: InputRequest;
@@ -20,7 +23,12 @@ export interface InputRequestBase {
     actionName: string;
 }
 
-export type InputRequest = FarmTileInputRequest;
+export type InputRequest = FarmTileInputRequest | OccupationRequest;
+
+export interface OccupationRequest extends InputRequestBase {
+    id: 'occupation-request';
+    onRequestSatisfied: (occupation: Occupation) => void;
+}
 
 export interface FarmTileInputRequest extends InputRequestBase {
     id: 'farm-tile-input-request';

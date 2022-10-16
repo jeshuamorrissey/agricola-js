@@ -1,4 +1,5 @@
 import { Resource, ResourceMap } from '../systems/resource';
+import { ActionTileCost } from './ActionTileCost';
 
 interface ResourceCost {
     resource: Resource;
@@ -21,11 +22,13 @@ const RESOURCE_TO_EMOJI: Record<Resource, string> = {
 export interface ActionTileResourceProps {
     resource: Resource;
     amount: number;
+    bonus?: Partial<ResourceMap>;
 }
 
 export function ActionTileResource({
     resource,
     amount,
+    bonus,
 }: ActionTileResourceProps) {
     return (
         <>
@@ -33,6 +36,13 @@ export function ActionTileResource({
                 {'+'}
                 {amount}
                 {RESOURCE_TO_EMOJI[resource]}
+                {bonus && (
+                    <ActionTileCost
+                        bonus={true}
+                        cost={bonus}
+                        costPerTileName={undefined}
+                    />
+                )}
             </span>
         </>
     );

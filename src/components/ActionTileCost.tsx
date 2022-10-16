@@ -1,3 +1,4 @@
+import React from 'react';
 import { Resource, ResourceMap } from '../systems/resource';
 
 interface ResourceCost {
@@ -21,9 +22,14 @@ const RESOURCE_TO_EMOJI: Record<Resource, string> = {
 export interface ActionTileCostProps {
     cost: Partial<ResourceMap>;
     costPerTileName: string | undefined;
+    bonus?: boolean;
 }
 
-export function ActionTileCost({ cost, costPerTileName }: ActionTileCostProps) {
+export function ActionTileCost({
+    cost,
+    costPerTileName,
+    bonus = false,
+}: ActionTileCostProps) {
     const resourceCosts: ResourceCost[] = [];
     for (const resource in cost) {
         const resourceCost = cost[resource as Resource];
@@ -45,14 +51,22 @@ export function ActionTileCost({ cost, costPerTileName }: ActionTileCostProps) {
                     suffix = ' + ';
                 }
 
+                let prefix = <span></span>;
+                if (bonus) {
+                    prefix = (
+                        <span style={{ fontStyle: 'italic' }}>Bonus: +</span>
+                    );
+                }
+
                 return (
-                    <>
+                    <React.Fragment key={`action-tile-cost-${idx}`}>
                         <span>
+                            {prefix}
                             {cost.cost}
                             {RESOURCE_TO_EMOJI[cost.resource]}
                             {suffix}
                         </span>
-                    </>
+                    </React.Fragment>
                 );
             })}
             <br />

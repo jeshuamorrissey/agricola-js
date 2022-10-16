@@ -51,6 +51,8 @@ export function executeAction(
             action.used = true;
             updateFn(state.player);
 
+            console.log(state.player.playedOccupations);
+
             if (action instanceof MultiAction && !action.actionsComplete) {
                 state.executeAction(action);
                 return {};

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Action } from '../systems/actions/action';
 import { MultiAction } from '../systems/actions/multi-action';
 import {
@@ -118,6 +118,7 @@ function ActionTileComponent({ action }: ActionTileComponentProps) {
                         <ActionTileResource
                             resource={action.resource}
                             amount={action.quantity}
+                            bonus={action.bonusResources(player)}
                         />
                     );
                 } else {
@@ -143,12 +144,12 @@ function ActionTileComponent({ action }: ActionTileComponentProps) {
                 }
 
                 return (
-                    <>
+                    <React.Fragment key={`action-contents-${idx}`}>
                         <div style={{ fontWeight: 'bold' }}>{action.name}</div>
                         {accumulatesNotice}
                         {resourceCost}
                         {suffix}
-                    </>
+                    </React.Fragment>
                 );
             })}
         </div>

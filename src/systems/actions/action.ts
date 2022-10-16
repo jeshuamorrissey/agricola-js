@@ -54,6 +54,21 @@ export abstract class Action {
         updatePlayerFn: PlayerStateUpdateFn
     ): InputRequest | undefined;
 
+    bonusResources(
+        player: PlayerState,
+        resourcesToGain: Partial<ResourceMap>
+    ): Partial<ResourceMap> {
+        let bonus: Partial<ResourceMap> = {};
+        for (const occupation of player.playedOccupations) {
+            bonus = {
+                ...bonus,
+                ...occupation.bonusResources(this, resourcesToGain),
+            };
+        }
+
+        return bonus;
+    }
+
     /**
      * Determine whether the given player can execute this action. This should return
      * true if they can, false otherwise.

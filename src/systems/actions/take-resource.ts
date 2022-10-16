@@ -1,4 +1,4 @@
-import { giveResources, Resource } from '../resource';
+import { giveResources, Resource, ResourceMap } from '../resource';
 import { PlayerState, PlayerStateUpdateFn } from '../state/state.player';
 import { Action, ActionProps } from './action';
 
@@ -34,13 +34,26 @@ export class TakeResourceAction extends Action {
         return this.amountToTake;
     }
 
+    amountToGet(): number {
+        return this.amountToTake;
+    }
+
+    bonusResources(player: PlayerState): Partial<ResourceMap> {
+        return super.bonusResources(player, {
+            [this.resource]: this.amountToGet(),
+        });
+    }
+
     override execute(
-        _: PlayerState,
+        player: PlayerState,
         updatePlayerFn: PlayerStateUpdateFn
     ): undefined {
         updatePlayerFn((player) => {
+            const bonusResources = this.bonusResources(player);
             player.resources = giveResources(player.resources, {
-                [this.resource]: this.amountToTake,
+                ...bonusResources,
+                [this.resource]:
+                    this.amountToTake + (bonusResources[this.resource] || 0),
             });
         });
 
@@ -61,12 +74,22 @@ export class TakeResourceAccumulatingAction extends TakeResourceAction {
         return this.__currentQuantity;
     }
 
+    amountToGet(): number {
+        return this.quantity;
+    }
+
     override execute(
         _: PlayerState,
         updatePlayerFn: PlayerStateUpdateFn
     ): undefined {
         updatePlayerFn((player) => {
-            player.resources[this.resource] += this.__currentQuantity;
+            const bonusResources = this.bonusResources(player);
+            player.resources = giveResources(player.resources, {
+                ...bonusResources,
+                [this.resource]:
+                    this.__currentQuantity +
+                    (bonusResources[this.resource] || 0),
+            });
             this.__currentQuantity = 0;
         });
 

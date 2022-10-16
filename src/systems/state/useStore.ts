@@ -8,6 +8,7 @@ import {
     TakeResourceAction,
 } from '../actions/take-resource';
 import { Farm } from '../farm';
+import { Occupation } from '../occupation';
 import {
     advanceRound,
     cancelInputRequest,
@@ -25,8 +26,23 @@ export const useStore = createState<State>((set, get) => ({
         ),
         numFamilyMembers: DEFAULTS.numFamilyMembers,
         remainingActions: DEFAULTS.numFamilyMembers,
-        actionSequence: [],
         resources: DEFAULTS.resources,
+        availableOccupations: [],
+        playedOccupations: [
+            new Occupation({
+                name: 'Fisherman',
+                description:
+                    'Whenever you use the "Fishing" action space, you receive 1 additional food. From round 8, you receive 2 additional food.',
+
+                bonusResources: (action, resources) => {
+                    if (action.name === 'Fishing Pond') {
+                        return { food: resources.food };
+                    }
+
+                    return {};
+                },
+            }),
+        ],
     },
 
     defaultActions: [
